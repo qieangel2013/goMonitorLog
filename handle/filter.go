@@ -180,7 +180,7 @@ func MatchText(dicFile string, text []rune, seps Seps, rep rune) string {
 						if j >= 0 {
 							keyData = append(keyData, j)
 							keyTmpData[j] = string(text[j])
-							text[j] = rep
+							// text[j] = rep
 							j--
 						}
 						depth--

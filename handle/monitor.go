@@ -42,13 +42,14 @@ func ExcuteTail(file string, cfg *Config, cline chan MonitorChan, tails chan *ta
 	}
 	seekInfo := tail.SeekInfo{Offset: -int64(tail_line), Whence: os.SEEK_END}
 	t, err := tail.TailFile(file, tail.Config{Follow: true, Poll: true, Location: &seekInfo})
+	// t, err := tail.TailFile(file, tail.Config{Follow: true})
 	if err != nil {
 		Error.Println("error:", err)
 	}
 	for line := range t.Lines {
 		strTmp := []rune(line.Text)
-		findListData := MatchText("find_list", strTmp, []rune{}, '*')
-		fillerListData := MatchText("fillter_list", strTmp, []rune{}, '*')
+		fillerListData := MatchText("fillter_list", strTmp, []rune{'"', '\''}, '*')
+		findListData := MatchText("find_list", strTmp, []rune{'"', '\''}, '*')
 		if findListData != "" && fillerListData == "" {
 			MonitorData := MonitorChan{file, findListData, line.Text}
 			cline <- MonitorData
@@ -94,10 +95,15 @@ Loop:
 func DingToInfo(s *MonitorChan, cfg *Config) bool {
 	if s.text != "" {
 		// s.text = "3336666"
+		var reportType = "error"
+		if strings.Contains(s.text, ".php") {
+			reportType = "php_error"
+		}
+		s.text = strings.Replace(s.text, `"`, `'`, -1)
 		s.text = strings.Replace(s.text, "\\", "\\\\", -1)
 		ip := GetIp()
-		formt := `#### ip:%s \n\n  #### category::php_error \n\n  ### **file**:<font color=#228B22 size=4>%s</font> \n\n #### key:%s \n\n #### error count:1 \n\n #### **错误**: \n\n > <font color=#0000FF size=4>%s</font> \n `
-		text := fmt.Sprintf(formt, ip, s.file, s.key, s.text)
+		formt := `#### ip:%s \n\n  #### category::%s \n\n  ### **file**:<font color=#228B22 size=4>%s</font> \n\n #### key:%s \n\n #### error count:1 \n\n #### **错误**: \n\n > <font color=#0000FF size=4>%s</font> \n `
+		text := fmt.Sprintf(formt, ip, reportType, s.file, s.key, s.text)
 		content := `{"msgtype": "markdown",
 					"markdown": {
             			"title":"服务端日志监控",
