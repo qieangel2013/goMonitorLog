@@ -1,0 +1,65 @@
+# file config list.
+
+log_list = [
+	"/usr/local/nginx/logs/access.log",
+	"/mnt/hgfs/workspace1/julive/app2019-11-08.log",
+	"/alidata/log/php/php-fpm.log",
+    "/alidata/log/www/pc_comjia/backend/logs/app$todayhourstr.log",
+    "/alidata/log/www/pc_comjia/cms/logs/app$todaystr.log",
+    "/alidata/log/www/pc_comjia/frontend/logs/app_frontend$todaystr.log",
+    "/alidata/log/www/pc_comjia/weixinfrontend/logs/app.log",
+    "/alidata/log/www/pc_comjia/m/logs/app_m$todaystr.log",
+    "/alidata/log/www/pc_comjia/weixinbackend/logs/app.log",
+    "/alidata/log/www/pc_comjia/console/logs/app.log",
+    "/alidata/log/www/pc_comjia/api/logs/app.log",
+    "/alidata/log/www/pc_comjia/u/logs/app.log",
+    "/alidata/log/www/pc_comjia/elite/logs/app.log",
+    "/alidata/log/www/pc_comjia/app_client/logs/app_$todaystr.log",
+    "/alidata/log/www/pc_comjia/weixin_service/runtime/logs/app.log",
+    "/alidata/log/www/pc_comjia/app_employee/logs/app_$todayhourstr.log",
+    "/alidata/log/www/pc_comjia/app_pad/logs/app_$todaystr.log",
+    "/alidata/log/www/pc_comjia/imgs/logs/app.log",
+]
+
+# fillter config list.
+
+fillter_list = [
+	"grep",
+    "UnauthorizedHttpException",
+    "NotFoundHttpException",
+    "InvalidRouteException",
+    "BadRequestHttpException",
+    "InvalidParamException",
+    "forbidden",
+    "没有权限登录",
+    "获得微信用户信息失败",
+    "获得access_token失败",
+    "yw_consult_close_exception_record",
+]
+
+# find str config list.
+
+find_list = [
+	"ErrorException",
+    "UnknownPropertyException",
+    "UnknownMethodException",
+    "PDOException",
+    "RedisException",
+    "Exception",
+    "ParseError",
+    "op_type_error",
+    "channel_id_of_order",
+    "[error][Error]",
+]
+
+# dingding config.
+ding_webhook_url = "https://oapi.dingtalk.com/robot/send?access_token=da1496a9af2fc96b7443af87037e64c1002a9d7a222abe7a8b345962a5ef9348"
+
+# env config
+env = "test"
+
+#log config
+server_log = "/mnt/hgfs/workspace1/julive/agent.log"
+
+# tail -n 参数(从第多少行展示开始监听)
+tail_line = "10"
