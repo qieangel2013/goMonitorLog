@@ -17,17 +17,24 @@ type MonitorChan struct {
 	text string
 }
 
+type FileChan struct {
+	file  string
+	ftype int
+}
+
 func IsExist(f string) bool {
 	_, err := os.Stat(f)
 	return err == nil || os.IsExist(err)
 }
 
-func AddToDaysMonitor(days []string, cfg *Config, cline chan MonitorChan, tails chan *tail.Tail) bool {
+func AddToDaysMonitor(days []string, cfg *Config, cline chan MonitorChan, tails chan *tail.Tail, fail chan FileChan) bool {
 	currentTime := time.Now()
 	for _, file := range days {
 		file = strings.Replace(file, "$todaystr", currentTime.Format("2006-01-02"), -1)
 		if !IsExist(file) {
 			Error.Println("%s文件不存在", file)
+			fileChanTmp := FileChan{file, 0}
+			fail <- fileChanTmp
 		} else {
 			go ExcuteTail(file, cfg, cline, tails)
 		}
@@ -63,13 +70,15 @@ func ExcuteTail(file string, cfg *Config, cline chan MonitorChan, tails chan *ta
 	return true
 }
 
-func AddToHoursMonitor(hours []string, cfg *Config, cline chan MonitorChan, tails chan *tail.Tail) bool {
+func AddToHoursMonitor(hours []string, cfg *Config, cline chan MonitorChan, tails chan *tail.Tail, fail chan FileChan) bool {
 	currentTime := time.Now()
 	for _, file := range hours {
 		file = strings.Replace(file, "$todayhourstr", currentTime.Format("2006-01-02_01"), -1)
 		// Info.Println(file)
 		if !IsExist(file) {
 			Error.Println("%s文件不存在", file)
+			fileChanTmp := FileChan{file, 1}
+			fail <- fileChanTmp
 		} else {
 			go ExcuteTail(file, cfg, cline, tails)
 
@@ -139,4 +148,29 @@ func GetIp() string {
 		}
 	}
 	return ""
+}
+
+func ExcuteFailFile(cfg *Config, cline chan MonitorChan, htails chan *tail.Tail, dtails chan *tail.Tail, fail chan FileChan) bool {
+	var hours []string
+	var days []string
+	for {
+		select {
+		case data := <-fail:
+			if data.ftype == 1 {
+				hours = append(hours, data.file)
+			} else {
+				days = append(days, data.file)
+			}
+		default:
+			if len(hours) > 0 {
+				go AddToHoursMonitor(hours, cfg, cline, htails, fail)
+			}
+			if len(days) > 0 {
+				go AddToDaysMonitor(days, cfg, cline, dtails, fail)
+			}
+			goto Loop
+		}
+	}
+Loop:
+	return true
 }

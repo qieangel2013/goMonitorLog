@@ -22,6 +22,7 @@ func main() {
 	var MonitorChan = make(chan handle.MonitorChan, 10)
 	TailDaysPointer := make(chan *tail.Tail, 10)
 	TailHoursPointer := make(chan *tail.Tail, 10)
+	FailPointer := make(chan handle.FileChan, 10)
 	cfg, err := handle.NewConfigWithFile(*configFile)
 	if err != nil {
 		log.Println("error:", err)
@@ -36,9 +37,9 @@ func main() {
 			daysFile = append(daysFile, file)
 		}
 	}
-	go handle.AddToDaysMonitor(daysFile, cfg, MonitorChan, TailDaysPointer)
+	go handle.AddToDaysMonitor(daysFile, cfg, MonitorChan, TailDaysPointer, FailPointer)
 	if len(hoursFile) != 0 {
-		go handle.AddToHoursMonitor(hoursFile, cfg, MonitorChan, TailHoursPointer)
+		go handle.AddToHoursMonitor(hoursFile, cfg, MonitorChan, TailHoursPointer, FailPointer)
 	}
 	go func() {
 		for {
@@ -60,7 +61,7 @@ func main() {
 				if timerCurrentHoursTime != currentHoursTime {
 					if handle.CloseMonitor(TailHoursPointer) {
 						currentHoursTime = timerCurrentHoursTime
-						go handle.AddToHoursMonitor(hoursFile, cfg, MonitorChan, TailHoursPointer)
+						go handle.AddToHoursMonitor(hoursFile, cfg, MonitorChan, TailHoursPointer, FailPointer)
 					}
 				}
 			}
@@ -68,9 +69,11 @@ func main() {
 			if timerCurrentTime != currentDaysTime {
 				if handle.CloseMonitor(TailDaysPointer) {
 					currentDaysTime = timerCurrentTime
-					go handle.AddToDaysMonitor(daysFile, cfg, MonitorChan, TailDaysPointer)
+					go handle.AddToDaysMonitor(daysFile, cfg, MonitorChan, TailDaysPointer, FailPointer)
 				}
 			}
+
+			go handle.ExcuteFailFile(cfg, MonitorChan, TailHoursPointer, TailDaysPointer, FailPointer)
 			timerActive.Reset(600 * time.Second)
 		}
 	}
