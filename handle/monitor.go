@@ -48,7 +48,7 @@ func ExcuteTail(file string, cfg *Config, cline chan MonitorChan, tails chan *ta
 		Error.Println("error:", err)
 	}
 	seekInfo := tail.SeekInfo{Offset: -int64(tail_line), Whence: os.SEEK_END}
-	t, err := tail.TailFile(file, tail.Config{Follow: true, Poll: true, Location: &seekInfo})
+	t, err := tail.TailFile(file, tail.Config{Follow: true, Poll: true, Location: &seekInfo, Logger: Info})
 	// t, err := tail.TailFile(file, tail.Config{Follow: true})
 	if err != nil {
 		Error.Println("error:", err)
